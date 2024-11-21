@@ -1,0 +1,69 @@
+[project]
+name = 'optimum-quanto'
+description = 'A pytorch quantization backend for optimum.'
+classifiers = [
+    'Development Status :: 2 - Pre-Alpha',
+    'License :: OSI Approved :: Apache Software License',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence'
+]
+keywords = ['torch', 'quantization']
+requires-python = '>=3.9.0'
+authors = [{ name = 'David Corvoysier' }]
+maintainers = [
+    {name = "HuggingFace Inc. Special Ops Team", email="hardware@huggingface.co"},
+]
+dependencies = ['torch>=2.4.0', 'ninja', 'numpy', 'safetensors', 'huggingface_hub']
+license = { text = 'Apache-2.0' }
+readme = 'README.md'
+dynamic = ['version']
+
+[project.urls]
+homepage = 'https://github.com/huggingface/optimum-quanto'
+
+[project.optional-dependencies]
+dev = ['pytest', 'ruff']
+examples = [
+    'torchvision',
+    'transformers',
+    'diffusers',
+    'datasets',
+    'accelerate',
+    'sentencepiece',
+    'scipy'
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["optimum*"]
+
+[tool.setuptools.dynamic]
+version = {attr = 'optimum.quanto.__version__'}
+
+[build-system]
+requires = ['setuptools>65.5.1', 'setuptools_scm']
+build-backend = 'setuptools.build_meta'
+
+[tool.ruff]
+# Configuration for Ruff
+line-length = 119  # Same line-length as Black had
+
+# Linting rules:
+# Never enforce `E501` (line length violations) and other specific rules.
+lint.ignore = ['C901', 'E501', 'E741']
+lint.select = ['C', 'E', 'F', 'I', 'W']
+
+# Ignore import violations in all `__init__.py` files.
+[tool.ruff.lint.per-file-ignores]
+'__init__.py' = ['E402', 'F401', 'F403', 'F811']
+
+# isort configuration (to sort imports)
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ['optimum.quanto']

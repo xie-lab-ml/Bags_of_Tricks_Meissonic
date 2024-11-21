@@ -1,0 +1,26 @@
+ninja_required_version = 1.3
+cxx = c++
+
+cflags = -DTORCH_EXTENSION_NAME=quanto_cpp -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/torch/csrc/api/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/TH -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/THC -isystem /home/shaoshitong/anaconda3/envs/meissonic/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -O3
+post_cflags = 
+cuda_dlink_post_cflags = 
+ldflags = -shared -L/home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/lib -lc10 -ltorch_cpu -ltorch -ltorch_python
+
+rule compile
+  command = $cxx -MMD -MF $out.d $cflags -c $in -o $out $post_cflags
+  depfile = $out.d
+  deps = gcc
+
+
+
+rule link
+  command = $cxx $in $ldflags -o $out
+
+build unpack.o: compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cpp/unpack.cpp
+build pybind_module.o: compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cpp/pybind_module.cpp
+
+
+
+build quanto_cpp.so: link unpack.o pybind_module.o
+
+default quanto_cpp.so

@@ -1,0 +1,40 @@
+ninja_required_version = 1.3
+cxx = c++
+nvcc = /usr/local/cuda/bin/nvcc
+
+cflags = -DTORCH_EXTENSION_NAME=quanto_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/torch/csrc/api/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/TH -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -g -O3
+post_cflags = 
+cuda_cflags = -DTORCH_EXTENSION_NAME=quanto_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/torch/csrc/api/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/TH -isystem /home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /home/shaoshitong/anaconda3/envs/meissonic/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_89,code=compute_89 -gencode=arch=compute_89,code=sm_89 --compiler-options '-fPIC' --expt-extended-lambda --use_fast_math -DQUANTO_CUDA_ARCH=890 -std=c++17
+cuda_post_cflags = 
+cuda_dlink_post_cflags = 
+ldflags = -shared -L/home/shaoshitong/anaconda3/envs/meissonic/lib/python3.10/site-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/usr/local/cuda/lib64 -lcudart
+
+rule compile
+  command = $cxx -MMD -MF $out.d $cflags -c $in -o $out $post_cflags
+  depfile = $out.d
+  deps = gcc
+
+rule cuda_compile
+  depfile = $out.d
+  deps = gcc
+  command = $nvcc --generate-dependencies-with-compile --dependency-output $out.d $cuda_cflags -c $in -o $out $cuda_post_cflags
+
+
+
+rule link
+  command = $cxx $in $ldflags -o $out
+
+build unpack.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/unpack.cu
+build gemm_cuda.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/awq/v2/gemm_cuda.cu
+build gemv_cuda.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/awq/v2/gemv_cuda.cu
+build fp8_marlin.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/marlin/fp8_marlin.cu
+build gptq_marlin_repack.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/marlin/gptq_marlin_repack.cu
+build marlin_cuda.o: compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/marlin/marlin_cuda.cpp
+build marlin_cuda_kernel.cuda.o: cuda_compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/marlin/marlin_cuda_kernel.cu
+build pybind_module.o: compile /home/shaoshitong/project/Meissonic/optimum-quanto/optimum/quanto/library/extensions/cuda/pybind_module.cpp
+
+
+
+build quanto_cuda.so: link unpack.cuda.o gemm_cuda.cuda.o gemv_cuda.cuda.o fp8_marlin.cuda.o gptq_marlin_repack.cuda.o marlin_cuda.o marlin_cuda_kernel.cuda.o pybind_module.o
+
+default quanto_cuda.so
