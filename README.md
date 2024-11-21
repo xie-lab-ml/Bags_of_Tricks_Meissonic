@@ -116,7 +116,7 @@ You can find the model quantization code in the `quantization` folder.
 
 You can find the ChallengeBench in the `challengebench` folder.
 
-Acknowledgements
+## Acknowledgements
 
 We would like to thank the authors of the original Meissonic, diffusers, tomesd and optimum-quanto repository for providing the code and resources.
 
