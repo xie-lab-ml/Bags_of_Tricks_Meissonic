@@ -1,0 +1,1 @@
+In challengebench.txt, we list 220 extremely difficult prompts, and repeat the prompts once again to reduce the variance of the indicator.
